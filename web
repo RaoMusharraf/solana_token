@@ -1,0 +1,76 @@
+  const NFTmint = async (publicKey) => {
+    try {
+      console.log("Starting tasting ---->>>>>");
+      const provider = getProvider();
+      setProvider(provider);
+
+      const proId = new PublicKey(NFTmint1.metadata.address);
+      const program = new Program(NFTmint1, proId, provider);
+
+      const mintKeypair = web3.Keypair.generate();
+      console.log("mintKeypair---->", mintKeypair);
+      console.log(mintKeypair.toString());
+
+      const testNftTitle = "RAOWAO";
+      const testNftSymbol = "Nice786"
+      const testNftUri = "https://gateway.pinata.cloud/ipfs/QmQ782Gr3zZMNUrg6jcZhUUR837edoixv6XjkZjAjsordi";
+      const TOKEN_METADATA_PROGRAM_ID = new web3.PublicKey(
+        "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+      );
+      const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
+        'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+      );
+
+      const NftTokenAccount = await getAssociatedTokenAddress(
+        mintKeypair.publicKey,
+        provider.wallet.publicKey
+      );
+      console.log("NFT Account: ", NftTokenAccount.toBase58());
+
+      console.log("Metadata");
+      const getMetadata = (
+        await web3.PublicKey.findProgramAddress(
+          [
+            Buffer.from("metadata"),
+            TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+            mintKeypair.publicKey.toBuffer(),
+          ],
+          TOKEN_METADATA_PROGRAM_ID
+        )
+      )[0];
+      console.log("Metadata");
+      console.log("Metadata initialized");
+      const masterEditionAddress = (await web3.PublicKey.findProgramAddress(
+        [
+          Buffer.from("metadata"),
+          TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+          mintKeypair.publicKey.toBuffer(),
+          Buffer.from("edition"),
+        ],
+        TOKEN_METADATA_PROGRAM_ID
+      ))[0];
+      console.log("Metadata initialized", getMetadata);
+      console.log("MintKey -->>", mintKeypair.publicKey.toString());
+
+      const tx = await program.methods.mint(
+        testNftTitle, testNftSymbol, testNftUri
+      )
+        .accounts({
+          mintAuthority: provider.wallet.publicKey,
+          mint: mintKeypair.publicKey,
+          tokenAccount: NftTokenAccount,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          masterEdition: masterEditionAddress,
+          metadata: getMetadata,
+          tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+          rent: web3.SYSVAR_RENT_PUBKEY,
+          associatedTokenProgram: SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
+        })
+        .signers([mintKeypair])
+        .rpc();
+      console.log("Your transaction signature", tx);
+    } catch (err) {
+      console.log(err)
+    }
+  };
