@@ -42,7 +42,8 @@ const Mint =()=>{
     const [stakeList, setStakelist] = useState({});
     const [campaign, setCampaign] = useState({});
     const MAX_ITEMS = 1000;
-  
+    
+    const contractAddress = '4SgjCWpjLWVZJagvqxFEyAxEjc14nqox13qUH7KKgzTL';
     const getProvider = () => {
       // const connection = new Connection(network, opts.preflightCommitment);
       var connection = new web3.Connection(clusterApiUrl("devnet"), {
